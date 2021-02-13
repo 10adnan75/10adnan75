@@ -25,4 +25,4 @@
  <img src="https://img.icons8.com/ios/50/000000/mysql-logo.png"> 
 </p>
 
-<p align='center'><a href="#"><img src="https://badges.pufler.dev/visits/10adnan75/10adnan75"></a></p>
+<br><p align='center'><a href="#"><img src="https://badges.pufler.dev/visits/10adnan75/10adnan75"></a></p>
