@@ -1,4 +1,4 @@
-<h1 align='center'> Hello World! 👋  I'm   <a href="https://10adnan75.github.io/" target="_blank"> Adnan Shaikh</a> 👨‍💻 </h1>
+<h1 align='center'> Hello World! I'm Adnan Shaikh </h1>
 
 <p align='center'> Computer Scientist </p>
 
