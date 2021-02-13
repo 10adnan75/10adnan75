@@ -21,8 +21,8 @@
  <img src="https://img.icons8.com/color/48/000000/javascript.png"> 
  <img src="https://img.icons8.com/color/48/000000/java.png"> 
  <img src="https://img.icons8.com/color/40/000000/python.png">  
- <img src="https://img.icons8.com/color/48/000000/mongodb.png">
  <img src="https://img.icons8.com/ios/50/000000/mysql-logo.png"> 
+ <img src="https://img.icons8.com/color/48/000000/mongodb.png">
 </p>
 
 <br><p align='center'><a href="#"><img src="https://badges.pufler.dev/visits/10adnan75/10adnan75"></a></p>
