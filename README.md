@@ -1,6 +1,6 @@
 <h1 align='center'> Hello World! 👋  I'm   <a href="https://10adnan75.github.io/" target="_blank"> Adnan Shaikh</a> 👨‍💻 </h1>
 
-<p align='center'> Computer Scientist </p>
+<h4 align='center'> Computer Scientist </h4>
 
 <p align='center'>
  <a href="https://www.linkedin.com/in/adnan-shaikh-23b266157" target="_blank">
