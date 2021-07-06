@@ -1,4 +1,5 @@
-<h1 align='center'> Hello World! 👋  I'm   <a href="https://10adnan75.github.io/" target="_blank"> Adnan Shaikh</a> 👨‍💻 </h1>
+<h1 align='center'> Hello World! <img src="https://raw.githubusercontent.com/10adnan75/10adnan75/master/assets/hi.gif" width="33px">
+  I'm   <a href="https://10adnan75.github.io/" target="_blank"> Adnan Shaikh</a> </h1>
 
 <h4 align='center'> Computer Scientist </h4>
 
