@@ -8,7 +8,5 @@
  <img src="https://img.shields.io/badge/hackerrank-%07190B.svg?&style=for-the-badge&logo=hackerrank&logoColor=white" /></a>&nbsp;&nbsp;
  <a href="https://twitter.com/10adnan75" target="_blank">
  <img src="https://img.shields.io/badge/twitter-%231DA1F2.svg?&style=for-the-badge&logo=twitter&logoColor=white" /></a>&nbsp;&nbsp;
+ <img src="https://github-readme-streak-stats.herokuapp.com/?user=10adnan75&" alt="10adnan75"/>
 </p>
-
-<p><img align="center" src="https://github-readme-streak-stats.herokuapp.com/?user=10adnan75&" alt="10adnan75"/></p>
-
