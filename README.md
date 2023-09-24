@@ -1,9 +1,13 @@
-<p align="center">
-<i>Hey there, I'm Adnan Shaikh!</i>
+<p>
+    <i>Hey there, I'm <a href="https://10adnan75.github.io/">Adnan</a>👋</i>
 </p>
 
-<p align="center">
-<a href= "https://www.linkedin.com/in/10adnan75/"><img src="https://img.icons8.com/material-outlined/30/000000/linkedin.png"/></a>
-<a href= "https://twitter.com/10adnan75"><img src="https://img.icons8.com/material-outlined/30/000000/twitter.png"/></a>
-<a href= "https://10adnan75.github.io/"><img src="https://img.icons8.com/material-outlined/27/000000/geography.png"/></a>
+<p>
+    <a href="https://leetcode.com/10adnan75"><picture><img height="24" width="24" src="https://cdn.simpleicons.org/leetcode"></picture></a>
+    <a href="https://instagram.com/pivot.element"><picture><img height="24" width="24" src="https://cdn.simpleicons.org/instagram"></picture></a>
+    <a href="https://youtube.com/10adnan75"><picture><img height="24" width="24" src="https://cdn.simpleicons.org/youtube"></picture></a>
+    <a href="https://discord.com/10adnan75"><picture><img height="24" width="24" src="https://cdn.simpleicons.org/discord"></picture></a>
+    <a href="https://hackerrank.com/10adnan75"><picture><img height="24" width="24" src="https://cdn.simpleicons.org/hackerrank"></picture></a>
 </p>
+
+<i>Check out my curriculum vitae: [here!](https://github.com/10adnan75/10adnan75.github.io/raw/main/Adnan_Resume.pdf)</i>
