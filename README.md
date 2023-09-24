@@ -10,4 +10,4 @@
     <a href="https://hackerrank.com/10adnan75"><picture><img height="24" width="24" src="https://cdn.simpleicons.org/hackerrank"></picture></a>
 </p>
 
-<i>Check out my curriculum vitae: [here!](https://github.com/10adnan75/10adnan75.github.io/raw/main/Adnan_Resume.pdf)</i>
+<i>Download my curriculum vitae by clicking: [here!](https://github.com/10adnan75/10adnan75.github.io/raw/main/Adnan_Resume.pdf)</i>
