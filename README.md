@@ -1,6 +1,6 @@
-<p>
+<h1>
     <i>Hey there, I'm <a href="https://10adnan75.github.io/">Adnan</a>👋</i>
-</p>
+</h1>
 
 <p>
     <a href="https://leetcode.com/10adnan75"><picture><img height="24" width="24" src="https://cdn.simpleicons.org/leetcode"></picture></a>
