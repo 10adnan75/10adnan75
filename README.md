@@ -6,7 +6,7 @@
     <a href="https://leetcode.com/10adnan75"><picture><img height="24" width="24" src="https://cdn.simpleicons.org/leetcode"></picture></a>
     <a href="https://instagram.com/pivot.element"><picture><img height="24" width="24" src="https://cdn.simpleicons.org/instagram"></picture></a>
     <a href="https://youtube.com/@10adnan75"><picture><img height="24" width="24" src="https://cdn.simpleicons.org/youtube"></picture></a>
-    <a href="https://discord.com/channels/10adnan75"><picture><img height="24" width="24" src="https://cdn.simpleicons.org/discord"></picture></a>
+    <a href="https://discord.gg/channels/10adnan75"><picture><img height="24" width="24" src="https://cdn.simpleicons.org/discord"></picture></a>
     <a href="https://hackerrank.com/10adnan75"><picture><img height="24" width="24" src="https://cdn.simpleicons.org/hackerrank"></picture></a>
 </p>
 
