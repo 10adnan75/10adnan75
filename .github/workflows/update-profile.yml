@@ -1,0 +1,35 @@
+name: Update terminal profile
+
+on:
+  schedule:
+    - cron: '23 16 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: terminal-profile
+  cancel-in-progress: false
+
+jobs:
+  update:
+    if: github.repository == '10adnan75/10adnan75'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Generate theme cards
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/update_profile.py
+      - name: Commit changed cards
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/profile-dark.svg assets/profile-light.svg
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m 'Update terminal profile stats'
+          git push
