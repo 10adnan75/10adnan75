@@ -19,6 +19,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Check profile generator
+        run: python3 -m unittest discover -s tests -v
       - name: Generate theme cards
         env:
           GH_TOKEN: ${{ github.token }}
@@ -27,7 +29,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/profile-dark.svg assets/profile-light.svg
+          git add assets/profile-dark.svg assets/profile-light.svg README.md
           if git diff --cached --quiet; then
             exit 0
           fi

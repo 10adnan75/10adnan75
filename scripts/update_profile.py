@@ -1,26 +1,28 @@
-"""Build original, theme-aware neofetch profile cards from public aggregate data."""
+"""Render the portfolio-style profile from public GitHub and WakaTime data."""
 from datetime import datetime
 from html import escape
 import json
 import os
 from pathlib import Path
+import urllib.parse
 import urllib.request
 from zoneinfo import ZoneInfo
+import xml.etree.ElementTree as ET
 from wakatime import SHARE_URL, summarize
 
 ROOT = Path(__file__).resolve().parents[1]
 USER = '10adnan75'
+DENSITY = ' .:^~!7?JY5PGB#&@'
+START, END = '<!-- CONTRIBUTIONS:START -->', '<!-- CONTRIBUTIONS:END -->'
 
 
 def fetch(url):
-    headers = {'User-Agent': '10adnan75-neofetch-profile/1.0'}
-    token = os.environ.get('GH_TOKEN')
+    headers = {'User-Agent': '10adnan75-profile/3.0'}
     if url.startswith('https://api.github.com/'):
         headers['Accept'] = 'application/vnd.github+json'
-        if token:
-            headers['Authorization'] = 'Bearer ' + token
-    req = urllib.request.Request(url, headers=headers)
-    with urllib.request.urlopen(req, timeout=30) as response:
+        if os.environ.get('GH_TOKEN'):
+            headers['Authorization'] = 'Bearer ' + os.environ['GH_TOKEN']
+    with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=30) as response:
         return json.load(response)
 
 
@@ -29,93 +31,159 @@ def collect():
     repos = []
     for page in range(1, 101):
         batch = fetch(f'https://api.github.com/users/{USER}/repos?type=owner&per_page=100&page={page}')
-        if not isinstance(batch, list):
-            raise ValueError('Unexpected repository response')
+        if not isinstance(batch, list): raise ValueError('Invalid repository response')
         repos.extend(batch)
-        if len(batch) < 100:
-            break
-    else:
-        raise ValueError('Repository pagination exceeded supported bound')
-    search = fetch(f'https://api.github.com/search/issues?q=author%3A{USER}%20type%3Apr%20is%3Amerged%20is%3Apublic&per_page=1')
-    if search.get('incomplete_results', False):
-        raise ValueError('GitHub returned an incomplete PR count')
+        if len(batch) < 100: break
+    else: raise ValueError('Repository pagination exceeded supported bound')
+    pulls = []
+    for page in range(1,11):
+        query = urllib.parse.urlencode({'q':f'author:{USER} is:pr is:public','per_page':100,'page':page})
+        result = fetch('https://api.github.com/search/issues?' + query)
+        if result.get('incomplete_results'): raise ValueError('Incomplete GitHub search results')
+        if result['total_count'] > 1000: raise ValueError('PR search exceeds GitHub search limit')
+        pulls.extend(result['items'])
+        if len(pulls) >= result['total_count']: break
+    else: raise ValueError('PR pagination exceeded supported bound')
     today = datetime.now(ZoneInfo('America/Los_Angeles')).date()
     start, end, days = summarize(fetch(SHARE_URL), today)
-    mins = int(sum(seconds for _, seconds in days) // 60)
+    minutes = int(sum(seconds for _, seconds in days) // 60)
+    external = [p for p in pulls if p['repository_url'].split('/repos/')[1].split('/')[0].lower() != USER.lower()]
     return {
-        'repos': len(repos),
-        'stars': sum(r['stargazers_count'] for r in repos if not r['fork']),
-        'followers': user['followers'],
-        'merged_prs': search['total_count'],
-        'since': datetime.fromisoformat(user['created_at'].replace('Z', '+00:00')).strftime('%b %Y'),
-        'time': f'{mins // 60}h {mins % 60}m',
-        'active': sum(seconds > 0 for _, seconds in days),
-        'window': f'{start:%b %d} - {end:%b %d, %Y}',
-        'updated': today.isoformat(),
+        'repos':len(repos), 'stars':sum(r['stargazers_count'] for r in repos if not r['fork']),
+        'followers':user['followers'], 'merged_prs':sum(bool(p['pull_request'].get('merged_at')) for p in pulls),
+        'time':f'{minutes//60}h {minutes%60}m', 'active':sum(s > 0 for _, s in days),
+        'updated':today.isoformat(), 'window':f'{start.isoformat()} to {end.isoformat()}',
+        'external':external,
     }
 
 
+def portrait_lines(dark):
+    lines = (ROOT/'assets/portrait.txt').read_text().splitlines()
+    if not lines or max(map(len,lines)) != 400:
+        raise ValueError('Expected the supplied 400-column portrait')
+    # Same density reversal used by the portfolio terminal for dark themes.
+    if dark:
+        inverse = str.maketrans(DENSITY, DENSITY[::-1])
+        return [line.translate(inverse) for line in lines]
+    return lines
+
+
 def render(stats, dark=True):
-    c = {'bg':'#161b22','text':'#c9d1d9','label':'#e7b46b','value':'#9bd5ff','muted':'#687889','line':'#303b49','accent':'#8fdda5'} if dark else {'bg':'#f6f8fa','text':'#24292f','label':'#925700','value':'#075b93','muted':'#657384','line':'#d4dce5','accent':'#176f3c'}
-    parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="600" viewBox="0 0 1080 600" role="img" aria-labelledby="title desc"><title id="title">Adnan Shaikh terminal profile</title><desc id="desc">Software developer at Easley-Dunn Productions, USC MS Computer Science. ASCII portrait, technical tools, AI tools, contact details, and public activity. Updated {stats["updated"]}.</desc><rect width="1080" height="600" rx="12" fill="{c["bg"]}"/>']
-    def text(x,y,value,color=None,size=14,weight='400'):
-        parts.append(f'<text x="{x}" y="{y}" fill="{color or c["text"]}" font-family="Consolas, Menlo, DejaVu Sans Mono, monospace" font-size="{size}" font-weight="{weight}" xml:space="preserve">{escape(str(value))}</text>')
-    text(24,31,'$ whoami',c['accent'],14)
-    for i,line in enumerate((ROOT/'assets/portrait.txt').read_text().splitlines()):
-        text(22,65+i*13,line,c['text'],13)
-    text(24,538,'ADNAN SHAIKH',c['accent'],19,'700')
-    text(24,562,'Code. Football. Curiosity.',c['muted'],12)
-    x=378
-    text(x,31,'adnan@10adnan75',c['accent'],16,'700')
-    parts.append(f'<path d="M{x} 45 H1055" stroke="{c["line"]}"/>')
+    c = ({'bg':'#0d1117','heading':'#e6edf3','text':'#8b949e','label':'#d29922','value':'#87ceeb','muted':'#484f58','line':'#30363d','accent':'#56d364','portrait':'#e6edf3'}
+         if dark else {'bg':'#ffffff','heading':'#1f2328','text':'#656d76','label':'#9a6700','value':'#5ba4cf','muted':'#8c959f','line':'#d0d7de','accent':'#2da44e','portrait':'#1f2328'})
+    p=[f'<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="958" viewBox="0 0 1080 958" role="img" aria-labelledby="title desc"><title id="title">10adnan75 | Adnan M Shaikh</title><desc id="desc">Software developer, USC MS Computer Science graduate. Five professional roles, systems and full-stack projects, AI tools, and public contributions. WakaTime reports the last 30 completed days. Data refreshed {stats["updated"]}.</desc><rect width="1080" height="958" rx="14" fill="{c["bg"]}"/>']
+    def text(x,y,value,color='text',size=14,weight='400',anchor=None):
+        extra=f' text-anchor="{anchor}"' if anchor else ''
+        p.append(f'<text x="{x}" y="{y}" fill="{c[color]}" font-family="ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace" font-size="{size}" font-weight="{weight}" xml:space="preserve"{extra}>{escape(str(value))}</text>')
+    def section(x,y,title,right):
+        text(x,y,title,'heading',15,'700')
+        start=x+len(title)*9.04+15
+        if start<right:p.append(f'<path d="M{start:.2f} {y-5} H{right}" stroke="{c["line"]}"/>')
     def row(y,key,value):
-        text(x,y,'. '+key,c['label'])
-        # Each row uses a fixed monospace column, with dots connecting its label and value.
-        total=77
-        dots=max(2,total-len(key)-len(value)-4)
-        text(x+(len(key)+3)*8.43,y,'.'*dots,c['muted'])
-        text(1055-len(value)*8.43,y,value,c['value'])
-    def section(y,name):
-        text(x,y,'- '+name,c['text'],14,'700')
-        parts.append(f'<path d="M{x+len(name)*8.43+30} {y-4} H1055" stroke="{c["line"]}"/>')
-    row(70,'Role','Software Developer')
-    row(91,'Host','Easley-Dunn Productions / MGI')
-    row(112,'Education','MS Computer Science / USC')
-    row(133,'Focus','Full stack, systems, game services')
-    row(154,'Languages','Java, Python, C#, C/C++, Go, TypeScript')
-    row(175,'Web','React, Next.js, Spring Boot, Flask, FastAPI')
-    row(196,'Build','Unity, Docker, GCP, GitHub Actions')
-    row(217,'GitHub.Since',stats['since'])
-    section(251,'AI toolkit')
-    row(276,'Tools','Codex, ChatGPT, Cursor, Antigravity')
-    row(297,'Also','Grok, Muse')
-    row(318,'Contribution','CA2A / delegation conformance tests')
-    section(352,'Contact')
-    row(377,'Web','adnanshaikh.space')
-    row(398,'Email','hey@adnanshaikh.space')
-    row(419,'LinkedIn','in/10adnan75')
-    section(453,'Public GitHub stats')
-    row(478,'Repos / Stars',f'{stats["repos"]} public / {stats["stars"]} on original repos')
-    row(499,'Merged PRs / Followers',f'{stats["merged_prs"]} public / {stats["followers"]} followers')
-    section(533,'WakaTime / 30 completed days')
-    row(558,'Tracked / Active',f'{stats["time"]} / {stats["active"]} of 30 days')
-    text(x,583,f'{stats["window"]} | Refreshed {stats["updated"]}',c['muted'],11)
-    parts.append('</svg>\n')
-    return '\n'.join(parts)
+        if '.' not in key or '/' in key or '://' in value: raise ValueError('Use dotted keys and pipe separators')
+        x,right=392,1052
+        text(x,y,key,'label',13.5)
+        text(right,y,value,'value',13.5,anchor='end')
+        left_end=x+len(key)*8.14+10
+        value_start=right-len(value)*8.14-10
+        if value_start < left_end: raise ValueError(f'Row too long: {key}: {value}')
+        if value_start-left_end>8:p.append(f'<path d="M{left_end:.2f} {y-4} H{value_start:.2f}" stroke="{c["muted"]}" stroke-width="1.4" stroke-dasharray="1 5"/>')
+    section(26,35,'$ whoami',350)
+    lines=portrait_lines(dark)
+    # Preserve all 400 columns and 188 rows, unlike the old low-resolution portrait.
+    p.append(f'<g fill="{c["portrait"]}" font-family="DejaVu Sans Mono, monospace" font-size="1.8" font-weight="700" transform="translate(26 69) scale(0.75 1)" xml:space="preserve">')
+    for i,line in enumerate(lines):p.append(f'<text x="0" y="{i*1.66:.2f}">{escape(line)}</text>')
+    p.append('</g>')
+    text(26,420,'Adnan M Shaikh','heading',24,'700')
+    text(26,448,'I build stuff.','accent',17)
+    text(26,470,'Then I test the weird parts.','text',15)
+    section(26,512,'work.lore',350)
+    jobs=[
+      ('Easley-Dunn Productions','Software Developer | Jun 2026 - now','Unity | card systems | integration'),
+      ('USC Games','Graduate TA | Aug 2025 - May 2026','55+ students | game dev | Git'),
+      ('USC Auxiliary Services','Full Stack | May 2025 - Sep 2025','React | Flask | Docker | CI + CD'),
+      ('Lumina AI Health Institute','SWE Intern | May 2025 - Aug 2025','Parking AI | Go | WebRTC | GCP'),
+      ('Persistent Systems','SDE | Jun 2022 - Jul 2024','React | .NET | SQL | insurance'),
+    ]
+    for i,(name,role,scope) in enumerate(jobs):
+        y=544+i*68
+        text(26,y,name,'heading',13.5,'700')
+        text(26,y+19,role,'muted',11.7)
+        text(26,y+37,scope,'text',11.7)
+    section(26,906,'off.clock',350)
+    text(26,932,'Football. Code. Repeat.','text',14)
+    section(392,35,'10adnan75',1052)
+    row(73,'current.role','Software Developer')
+    row(95,'current.host','Easley-Dunn Productions | MGI')
+    row(117,'degree.unlocked','MS Computer Science | USC 2026')
+    row(139,'home.base','Los Angeles, CA')
+    row(161,'build.focus','Full stack | systems | game services')
+    section(392,199,'stack.loadout',1052)
+    row(225,'code.core','Java | Python | C# | C | C++ | Go')
+    row(247,'web.stack','TypeScript | React | Next.js | Spring Boot')
+    row(269,'api.stack','Flask | FastAPI | .NET')
+    row(291,'data.layer','PostgreSQL | MSSQL | MongoDB')
+    row(313,'ship.stack','Unity | Docker | GCP | GitHub Actions')
+    section(392,351,'ai.stack',1052)
+    row(377,'tools.in.use','Codex | ChatGPT | Cursor | Antigravity')
+    row(399,'also.in.rotation','Grok | Muse')
+    section(392,437,'open.source',1052)
+    row(463,'ca2a.tests','Agent delegation | 3 conformance tests')
+    row(485,'dicedb.fix','Client state | watcher notifications')
+    row(507,'pihole.cleanup','CLI cleanup | password-wrapper comment')
+    row(529,'mgi.systems','Player identity | game-service tests')
+    section(392,589,'side.quests',1052)
+    row(615,'squad.space','Spring Boot | React | WebRTC')
+    row(637,'raft.curp','Distributed key-value store | C++')
+    row(659,'kernel.mode','Weenix educational kernel | C')
+    row(681,'from.scratch','HTTP server | DNS server | shell')
+    section(392,719,'github.stats',1052)
+    row(745,'repos.stars',f'{stats["repos"]} public repos | {stats["stars"]} original-repo stars')
+    row(767,'prs.people',f'{stats["merged_prs"]} merged public PRs | {stats["followers"]} followers')
+    section(392,805,'WakaTime',1052)
+    row(831,'tracked.time',f'{stats["time"]} | {stats["active"]} active days | last 30 days')
+    section(392,869,'say.hey',1052)
+    row(895,'inbox.open','hey@adnanshaikh.space')
+    row(917,'portfolio.live','adnanshaikh.space')
+    row(939,'linkedin.handle','/in/10adnan75')
+    p.append('</svg>\n')
+    return '\n'.join(p)
+
+
+def contributions_md(pulls):
+    grouped={}
+    for pull in pulls:
+        repo=pull['repository_url'].split('/repos/')[1]
+        grouped.setdefault(repo,[]).append(pull)
+    parts=[]
+    for repo in sorted(grouped,key=str.lower):
+        parts.append(f'**[{repo}](https://github.com/{repo})**\n')
+        for pull in sorted(grouped[repo],key=lambda p:p['number'],reverse=True):
+            status='merged' if pull['pull_request'].get('merged_at') else ('open' if pull['state']=='open' else 'closed without merge')
+            title=escape(pull['title']).replace('[','&#91;').replace(']','&#93;').replace('*','&#42;').replace('`','&#96;').replace('\n',' ')
+            url=pull['html_url']
+            if not url.startswith('https://github.com/'): raise ValueError('Unexpected PR URL')
+            parts.append(f'- [#{pull["number"]}]({url}) | {title} | **{status}**')
+        parts.append('')
+    return '\n'.join(parts).strip()
+
+
+def refresh_readme(original,pulls):
+    if original.count(START)!=1 or original.count(END)!=1:raise ValueError('README contribution markers missing or duplicated')
+    before,remainder=original.split(START)
+    _,after=remainder.split(END)
+    return before+START+'\n'+contributions_md(pulls)+'\n'+END+after
 
 
 def main():
-    stats = collect()
-    # Validate and render both variants before replacing either published card.
-    cards = {name:render(stats,dark) for name,dark in [('profile-dark.svg',True),('profile-light.svg',False)]}
-    import xml.etree.ElementTree as ET
-    for value in cards.values(): ET.fromstring(value)
-    for name,value in cards.items():
-        path=ROOT/'assets'/name
-        temporary=path.with_suffix('.tmp')
-        temporary.write_text(value,encoding='utf-8')
-        temporary.replace(path)
-    print('Updated both theme cards with public aggregates.')
+    stats=collect()
+    files={ROOT/'assets'/f'profile-{name}.svg':render(stats,dark) for name,dark in [('dark',True),('light',False)]}
+    for contents in files.values():ET.fromstring(contents)
+    readme=ROOT/'README.md'
+    files[readme]=refresh_readme(readme.read_text(),stats['external'])
+    for path,contents in files.items():
+        temporary=path.with_suffix(path.suffix+'.tmp')
+        temporary.write_text(contents,encoding='utf-8');temporary.replace(path)
+    print(f'Updated theme cards and {len(stats["external"])} public external PR entries.')
 
-if __name__ == '__main__':
-    main()
+if __name__=='__main__':main()
