@@ -51,10 +51,19 @@ class ProfileTests(unittest.TestCase):
         for rows in [self.feed['data'][:-1],self.feed['data']+[self.feed['data'][1]]]:
             with self.assertRaises(ValueError):summarize({'data':rows},self.today)
 
-    def test_portrait_exact_and_theme_inverted(self):
-        original=profile.portrait_lines(False);dark=profile.portrait_lines(True)
-        self.assertEqual(len(original),34)
-        self.assertEqual(original,dark)
+    def test_card_renders_without_portrait_asset(self):
+        with patch.object(profile,'fetch',self.fake):stats=profile.collect()
+        # The SVG generator must not read the retired portrait asset.
+        with patch.object(Path,'read_text',side_effect=AssertionError('Unexpected asset read')):
+            root=ET.fromstring(profile.render(stats,True))
+        texts=list(root.iter('{http://www.w3.org/2000/svg}text'))
+        name=next(t for t in texts if t.text=='Adnan M Shaikh')
+        whoami=next(t for t in texts if t.text=='$ whoami')
+        self.assertGreater(float(name.get('y')),float(whoami.get('y')))
+        visible=' '.join(t.text or '' for t in texts)
+        self.assertIn("Monster Gridiron's card collection and pack-opening system",visible)
+        self.assertIn('developed an HLSL mesh-reveal shader.',visible)
+        self.assertIn('SQL data migration, query optimization, and wellness features.',visible)
 
     def test_card_labels_and_theme(self):
         with patch.object(profile,'fetch',self.fake):s=profile.collect()
@@ -62,7 +71,9 @@ class ProfileTests(unittest.TestCase):
             root=ET.fromstring(profile.render(s,dark))
             texts=list(root.iter('{http://www.w3.org/2000/svg}text'))
             visible=[t.text or '' for t in texts]
-            self.assertIn('10adnan75',visible);self.assertIn('WakaTime',visible)
+            self.assertIn('10adnan75',visible);self.assertIn('coding.hours',visible)
+            self.assertNotIn('say.hey',visible)
+            self.assertIn('Custom Weenix kernel | C',visible)
             self.assertFalse(any('://' in v for v in visible))
             self.assertFalse(any('Refreshed' in v or 'adnan@' in v for v in visible))
             user=next(t for t in texts if t.text=='10adnan75' and t.get('font-weight')=='700')
