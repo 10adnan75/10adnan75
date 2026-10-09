@@ -57,20 +57,16 @@ def collect():
     }
 
 
-def portrait_lines(dark):
+def portrait_lines(dark=False):
     lines = (ROOT/'assets/portrait.txt').read_text().splitlines()
-    if not lines or max(map(len,lines)) != 400:
-        raise ValueError('Expected the supplied 400-column portrait')
-    # Same density reversal used by the portfolio terminal for dark themes.
-    if dark:
-        inverse = str.maketrans(DENSITY, DENSITY[::-1])
-        return [line.translate(inverse) for line in lines]
+    if not lines or len(lines) != 34:
+        raise ValueError('Expected the supplied 34-line portrait')
     return lines
 
 
 def render(stats, dark=True):
-    c = ({'bg':'#0d1117','heading':'#e6edf3','text':'#8b949e','label':'#d29922','value':'#87ceeb','muted':'#484f58','line':'#30363d','accent':'#56d364','portrait':'#e6edf3'}
-         if dark else {'bg':'#ffffff','heading':'#1f2328','text':'#656d76','label':'#9a6700','value':'#5ba4cf','muted':'#8c959f','line':'#d0d7de','accent':'#2da44e','portrait':'#1f2328'})
+    c = ({'bg':'none','heading':'#e6edf3','text':'#8b949e','label':'#d29922','value':'#87ceeb','muted':'#484f58','line':'#30363d','accent':'#56d364','portrait':'#8b949e'}
+         if dark else {'bg':'none','heading':'#1f2328','text':'#656d76','label':'#9a6700','value':'#5ba4cf','muted':'#8c959f','line':'#d0d7de','accent':'#2da44e','portrait':'#656d76'})
     p=[f'<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="958" viewBox="0 0 1080 958" role="img" aria-labelledby="title desc"><title id="title">10adnan75 | Adnan M Shaikh</title><desc id="desc">Software developer, USC MS Computer Science graduate. Five professional roles, systems and full-stack projects, AI tools, and public contributions. WakaTime reports the last 30 completed days. Data refreshed {stats["updated"]}.</desc><rect width="1080" height="958" rx="14" fill="{c["bg"]}"/>']
     def text(x,y,value,color='text',size=14,weight='400',anchor=None):
         extra=f' text-anchor="{anchor}"' if anchor else ''
@@ -90,9 +86,8 @@ def render(stats, dark=True):
         if value_start-left_end>8:p.append(f'<path d="M{left_end:.2f} {y-4} H{value_start:.2f}" stroke="{c["muted"]}" stroke-width="1.4" stroke-dasharray="1 5"/>')
     section(26,35,'$ whoami',350)
     lines=portrait_lines(dark)
-    # Preserve all 400 columns and 188 rows, unlike the old low-resolution portrait.
-    p.append(f'<g fill="{c["portrait"]}" font-family="DejaVu Sans Mono, monospace" font-size="1.8" font-weight="700" transform="translate(26 69) scale(0.75 1)" xml:space="preserve">')
-    for i,line in enumerate(lines):p.append(f'<text x="0" y="{i*1.66:.2f}">{escape(line)}</text>')
+    p.append(f'<g fill="{c["portrait"]}" font-family="ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace" font-size="11" font-weight="400" xml:space="preserve">')
+    for i,line in enumerate(lines):p.append(f'<text x="26" y="{64+i*9.8:.1f}">{escape(line)}</text>')
     p.append('</g>')
     text(26,420,'Adnan M Shaikh','heading',24,'700')
     text(26,448,'I build stuff.','accent',17)
@@ -107,11 +102,11 @@ def render(stats, dark=True):
     ]
     for i,(name,role,scope) in enumerate(jobs):
         y=544+i*68
-        text(26,y,name,'heading',13.5,'700')
+        text(26,y,name,'accent',13.5,'700')
         text(26,y+19,role,'muted',11.7)
         text(26,y+37,scope,'text',11.7)
     section(26,906,'off.clock',350)
-    text(26,932,'Football. Code. Repeat.','text',14)
+    text(26,932,'Code. Football. Curiosity.','text',14)
     section(392,35,'10adnan75',1052)
     row(73,'current.role','Software Developer')
     row(95,'current.host','Easley-Dunn Productions | MGI')

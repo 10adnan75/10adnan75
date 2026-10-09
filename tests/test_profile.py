@@ -53,9 +53,8 @@ class ProfileTests(unittest.TestCase):
 
     def test_portrait_exact_and_theme_inverted(self):
         original=profile.portrait_lines(False);dark=profile.portrait_lines(True)
-        self.assertEqual((len(original),set(map(len,original))),(188,{400}))
-        table=str.maketrans(profile.DENSITY,profile.DENSITY[::-1])
-        self.assertEqual([line.translate(table) for line in dark],original)
+        self.assertEqual(len(original),34)
+        self.assertEqual(original,dark)
 
     def test_card_labels_and_theme(self):
         with patch.object(profile,'fetch',self.fake):s=profile.collect()

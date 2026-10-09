@@ -79,6 +79,10 @@ This index includes my public PRs to repositories owned by other users and organ
 - [#6532](https://github.com/pi-hole/pi-hole/pull/6532) | Fix readonly variable error in network flush (Docker) | **closed without merge**
 - [#6531](https://github.com/pi-hole/pi-hole/pull/6531) | Remove misleading TODO comment for SetWebPassword | **merged**
 - [#6530](https://github.com/pi-hole/pi-hole/pull/6530) | Remove deprecated arpflush command in favor of networkflush | **merged**
+
+**[shivarajbhanji/AVIS](https://github.com/shivarajbhanji/AVIS)**
+
+- [#2](https://github.com/shivarajbhanji/AVIS/pull/2) | Background Scoring Loop | **merged**
 <!-- CONTRIBUTIONS:END -->
 
 </details>
