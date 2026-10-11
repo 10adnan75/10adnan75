@@ -59,7 +59,7 @@ def render(stats, dark=True):
     spacing = 1.05
     height = round(939 * spacing)
     c = ({'bg':'none','heading':'#e6edf3','text':'#8b949e','label':'#d29922','value':'#5889df','muted':'#484f58','line':'#30363d','accent':'#56d364','portrait':'#8b949e'}
-         if dark else {'bg':'none','heading':'#1f2328','text':'#656d76','label':'#9a6700','value':'#5889df','muted':'#8c959f','line':'#d0d7de','accent':'#2da44e','portrait':'#656d76'})
+         if dark else {'bg':'none','heading':'#1f2328','text':'#656d76','label':'#9a6700','value':'#4a78c9','muted':'#8c959f','line':'#d0d7de','accent':'#2da44e','portrait':'#656d76'})
     p=[f'<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="{height}" viewBox="0 0 1080 {height}" role="img" aria-labelledby="title desc"><title id="title">10adnan75 | Adnan M Shaikh</title><desc id="desc">Software developer, USC MS Computer Science graduate. Five professional roles, systems and full-stack projects, AI tools, and public contributions. WakaTime reports the last 30 completed days. Data refreshed {stats["updated"]}.</desc><rect width="1080" height="{height}" rx="14" fill="{c["bg"]}"/>']
     def text(x,y,value,color='text',size=14,weight='400',anchor=None):
         extra=f' text-anchor="{anchor}"' if anchor else ''
